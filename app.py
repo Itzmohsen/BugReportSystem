@@ -44,20 +44,20 @@ def load_user(user_id):
 def dashboard():
     search_form = BugSearchForm(formdata=request.form if request.method == 'POST' else request.args)
     page = request.args.get('page', 1, type=int)
-    per_page = 10  # Or another suitable number of items per page
+    per_page = 10  
     
     query = BugReport.query.filter_by(user_id=current_user.id)
     
-    # Apply filters from search_form using case-insensitive comparison
+
     if request.method == 'POST' or request.method == 'GET':
         if search_form.keyword.data:
-            # Use func.lower for case-insensitive search on the title
+
             query = query.filter(func.lower(BugReport.title).contains(func.lower(search_form.keyword.data)))
         if search_form.status.data and search_form.status.data != 'All':
-            # Use func.lower for case-insensitive comparison on the status
+
             query = query.filter(func.lower(BugReport.status) == func.lower(search_form.status.data))
         if search_form.severity.data and search_form.severity.data != 'All':
-            # Use func.lower for case-insensitive comparison on the severity
+
             query = query.filter(func.lower(BugReport.severity) == func.lower(search_form.severity.data))
     
     pagination = query.order_by(BugReport.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
@@ -75,7 +75,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        if user and user.password == form.password.data:  # This should use hashed passwords in a real app
+        if user and user.password == form.password.data:  
             login_user(user)
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('dashboard'))
@@ -89,7 +89,7 @@ def register():
         return redirect(url_for('dashboard'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data, password=form.password.data)  # Hash passwords in real app
+        user = User(username=form.username.data, email=form.email.data, password=form.password.data)  
         db.session.add(user)
         db.session.commit()
         flash('Congratulations, you are now a registered user!')
@@ -101,7 +101,7 @@ def register():
 def submit_bug():
     form = BugReportForm()
     if form.validate_on_submit():
-        # Handling file uploads
+
         screenshot = form.screenshot.data
         screen_recording = form.screen_recording.data
         screenshot_filename, screen_recording_filename = None, None
@@ -125,10 +125,10 @@ def submit_bug():
             screen_recording_path=screen_recording_filename
         )
         
-        # Save the bug to the database
+
         db.session.add(bug)
         
-        # Update user points
+
         current_user.points += 10  # Assuming 'points' field exists in User model
         
         db.session.commit()
@@ -185,7 +185,7 @@ def logout():
 @app.route('/trend_analysis')
 @login_required
 def trend_analysis():
-    # Fetch and process data for the graph by severity
+
     results_severity = db.session.query(
         extract('month', BugReport.created_at).label('month'),
         BugReport.severity,
@@ -208,7 +208,7 @@ def trend_analysis():
             new_trace['y'][month_num-1] = count
             data_severity.append(new_trace)
 
-    # Fetch and process data for the graph by status
+
     results_status = db.session.query(
         extract('month', BugReport.created_at).label('month'),
         BugReport.status,
@@ -237,7 +237,7 @@ def trend_analysis():
             'title': 'Bug Reports by Severity',
             'barmode': 'group',
             'yaxis': {
-                'tickformat': ',d'  # Format ticks as integers
+                'tickformat': ',d' 
             }
         }
     }, cls=plotly.utils.PlotlyJSONEncoder)
@@ -248,7 +248,7 @@ def trend_analysis():
             'title': 'Bug Reports by Status',
             'barmode': 'group',
             'yaxis': {
-                'tickformat': ',d'  # Format ticks as integers
+                'tickformat': ',d'  
             }
         }
     }, cls=plotly.utils.PlotlyJSONEncoder)
