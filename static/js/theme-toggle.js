@@ -1,4 +1,3 @@
-// Add this script to your theme-toggle.js file or within a script tag in base.html
 const themeToggle = document.getElementById('theme-toggle');
 const currentTheme = localStorage.getItem('theme');
 
