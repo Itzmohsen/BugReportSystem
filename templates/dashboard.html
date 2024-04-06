@@ -5,7 +5,6 @@
 <a href="{{ url_for('submit_bug') }}" class="btn btn-primary mb-3">Submit New Bug</a>
 <a href="{{ url_for('trend_analysis') }}" class="btn btn-info mb-3">Trend Analysis</a>
 
-<!-- Begin Search Form -->
 <form method="GET" action="{{ url_for('dashboard') }}">
     {{ search_form.hidden_tag() }}
     <div class="form-row">
@@ -23,9 +22,7 @@
         </div>
     </div>
 </form>
-<!-- End Search Form -->
 
-<!-- Updated bug display table with hover effect and conditional attachments button -->
 <table class="table table-hover">
     <thead>
         <tr>
@@ -58,10 +55,8 @@
     </tbody>
 </table>
 
-<!-- Pagination Links -->
 <nav aria-label="Bug report pages">
     <ul class="pagination">
-        <!-- Pagination links here -->
     </ul>
 </nav>
 {% endblock %}
