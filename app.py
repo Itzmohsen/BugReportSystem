@@ -3,61 +3,58 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
 import os
-from models import db, User, BugReport
-from forms import LoginForm, RegistrationForm, BugReportForm, EditBugForm, BugSearchForm
-from config import Config
-from sqlalchemy import func, extract
-import plotly
+from models import db, User, BugReport  # Importing database models
+from forms import LoginForm, RegistrationForm, BugReportForm, EditBugForm, BugSearchForm  # Importing Flask-WTF forms
+from config import Config  # Importing configuration settings
+from sqlalchemy import func, extract  # Importing SQL functions
+import plotly  # Importing Plotly for data visualization
 import plotly.graph_objs as go
 import json
-from sqlalchemy import func
-import datetime
-
-import calendar
-from werkzeug.utils import secure_filename
-import os
-
+import calendar  # Importing calendar module for date-related operations
+from werkzeug.utils import secure_filename  # Secure file upload handling
+import datetime  # Importing datetime module for date/time manipulation
 
 
 def month_number_to_name(month_num):
+    """Converts month number to month name."""
     return calendar.month_name[month_num]
 
 
-app = Flask(__name__)
-app.config.from_object(Config)
-app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
+app = Flask(__name__)  # Creating Flask application instance
+app.config.from_object(Config)  # Loading configuration settings from Config object
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')  # Setting upload folder path
 
-db.init_app(app)
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
-mail = Mail(app)
+db.init_app(app)  # Initializing SQLAlchemy database
+login_manager = LoginManager(app)  # Initializing Flask-Login
+login_manager.login_view = 'login'  # Setting login view
+mail = Mail(app)  # Initializing Flask-Mail for email sending
 
 with app.app_context():
-    db.create_all()
+    db.create_all()  # Creating database tables based on models defined in models.py
+
 
 @login_manager.user_loader
 def load_user(user_id):
+    """Callback to reload user object from user ID stored in session."""
     return User.query.get(int(user_id))
+
 
 @app.route('/', methods=['GET', 'POST'])
 @login_required
 def dashboard():
+    """Render dashboard page with bug reports."""
     search_form = BugSearchForm(formdata=request.form if request.method == 'POST' else request.args)
     page = request.args.get('page', 1, type=int)
     per_page = 10  
     
     query = BugReport.query.filter_by(user_id=current_user.id)
     
-
     if request.method == 'POST' or request.method == 'GET':
         if search_form.keyword.data:
-
             query = query.filter(func.lower(BugReport.title).contains(func.lower(search_form.keyword.data)))
         if search_form.status.data and search_form.status.data != 'All':
-
             query = query.filter(func.lower(BugReport.status) == func.lower(search_form.status.data))
         if search_form.severity.data and search_form.severity.data != 'All':
-
             query = query.filter(func.lower(BugReport.severity) == func.lower(search_form.severity.data))
     
     pagination = query.order_by(BugReport.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
@@ -66,10 +63,9 @@ def dashboard():
     return render_template('dashboard.html', bugs=bugs, search_form=search_form, pagination=pagination)
 
 
-
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """User login route."""
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     form = LoginForm()
@@ -83,8 +79,10 @@ def login():
             flash('Invalid username or password')
     return render_template('login.html', form=form)
 
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    """User registration route."""
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     form = RegistrationForm()
@@ -96,12 +94,13 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
+
 @app.route('/submit_bug', methods=['GET', 'POST'])
 @login_required
 def submit_bug():
+    """Submit bug report route."""
     form = BugReportForm()
     if form.validate_on_submit():
-
         screenshot = form.screenshot.data
         screen_recording = form.screen_recording.data
         screenshot_filename, screen_recording_filename = None, None
@@ -125,12 +124,8 @@ def submit_bug():
             screen_recording_path=screen_recording_filename
         )
         
-
         db.session.add(bug)
-        
-
         current_user.points += 10  # Assuming 'points' field exists in User model
-        
         db.session.commit()
         
         flash('Your bug report has been submitted.', 'success')
@@ -142,6 +137,7 @@ def submit_bug():
 @app.route('/edit_bug/<int:bug_id>', methods=['GET', 'POST'])
 @login_required
 def edit_bug(bug_id):
+    """Edit bug report route."""
     bug = BugReport.query.get_or_404(bug_id)
     if bug.user_id != current_user.id:
         flash('You can only edit your own bug reports.')
@@ -160,15 +156,18 @@ def edit_bug(bug_id):
         form.status.data = bug.status
     return render_template('edit_bug.html', form=form)
 
+
 @app.route('/leaderboard')
 def leaderboard():
+    """Leaderboard route to display top users."""
     top_users = User.query.order_by(User.points.desc()).limit(10).all()
-    print("Top Users:", top_users)
     return render_template('leaderboard.html', top_users=top_users)
+
 
 @app.route('/bug/<int:bug_id>/attachments')
 @login_required
 def view_attachments(bug_id):
+    """View attachments for a specific bug report."""
     bug = BugReport.query.get_or_404(bug_id)
     if bug.user_id != current_user.id:
         flash('You do not have permission to view these attachments.', 'danger')
@@ -176,11 +175,12 @@ def view_attachments(bug_id):
     return render_template('view_attachments.html', bug=bug)
 
 
-
 @app.route('/logout')
 def logout():
+    """User logout route."""
     logout_user()
     return redirect(url_for('login'))
+
 
 @app.route('/trend_analysis')
 @login_required

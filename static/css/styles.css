@@ -1,4 +1,4 @@
-/* static/css/styles.css */
+static/css/styles.css
 
 :root {
     --background-color: #ffffff; /* Light mode background */
@@ -10,18 +10,6 @@
     --table-bg-color: #ffffff; /* Light mode table background */
     --table-text-color: #212529; /* Light mode table text */
     --table-border-color: #dee2e6; /* Light mode table border */
-}
-
-[data-theme="dark"] {
-    --background-color: #121212; /* Dark mode background */
-    --text-color: #ffffff; /* Dark mode text */
-    --primary-color: #0a84ff; /* Primary color for dark mode */
-    --button-bg-color: #0a84ff; /* Primary button background color for dark mode */
-    --button-text-color: #ffffff; /* Primary button text color for dark mode */
-    /* Table styles for dark mode */
-    --table-bg-color: #343a40; /* Dark mode table background */
-    --table-text-color: #f8f9fa; /* Dark mode table text */
-    --table-border-color: #495057; /* Dark mode table border */
 }
 
 body {
@@ -46,11 +34,6 @@ a, .btn-primary {
 .btn-primary:hover {
     background-color: #0056b3; /* Darker shade for hover in light mode */
     border-color: #0056b3;
-}
-
-[data-theme="dark"] .btn-primary:hover {
-    background-color: #0050e0; /* Darker shade for hover in dark mode */
-    border-color: #0050e0;
 }
 
 #theme-toggle {

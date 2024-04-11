@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Dashboard</h2>
-<a href="{{ url_for('submit_bug') }}" class="btn btn-primary mb-3">Submit New Bug</a>
-<a href="{{ url_for('trend_analysis') }}" class="btn btn-info mb-3">Trend Analysis</a>
+<div class="text-center">
+    <h2>Dashboard</h2>
+    <a href="{{ url_for('submit_bug') }}" class="btn btn-primary mb-3">Submit New Bug</a>
+    <a href="{{ url_for('trend_analysis') }}" class="btn btn-info mb-3">Trend Analysis</a>
+</div>
 
 <form method="GET" action="{{ url_for('dashboard') }}">
     {{ search_form.hidden_tag() }}
@@ -17,7 +19,7 @@
         <div class="col">
             {{ search_form.severity.label }} {{ search_form.severity(class="form-control") }}
         </div>
-        <div class="col">
+        <div class="col mt-3">
             <button type="submit" class="btn btn-primary mb-2">Search</button>
         </div>
     </div>
