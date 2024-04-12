@@ -47,7 +47,7 @@ def dashboard():
     page = request.args.get('page', 1, type=int)
     per_page = 10  
     
-    query = BugReport.query.filter_by(user_id=current_user.id)
+    query = BugReport.query  # Remove the filter for current_user.id
     
     if request.method == 'POST' or request.method == 'GET':
         if search_form.keyword.data:
@@ -139,21 +139,12 @@ def submit_bug():
 def edit_bug(bug_id):
     """Edit bug report route."""
     bug = BugReport.query.get_or_404(bug_id)
-    if bug.user_id != current_user.id:
-        flash('You can only edit your own bug reports.')
-        return redirect(url_for('dashboard'))
-    form = EditBugForm()
+    form = EditBugForm(obj=bug)  # Pass the bug object to the form to pre-fill data
     if form.validate_on_submit():
-        bug.title = form.title.data
-        bug.description = form.description.data
-        bug.status = form.status.data
+        form.populate_obj(bug)  # Populate the bug object with form data
         db.session.commit()
         flash('Your bug report has been updated.')
         return redirect(url_for('dashboard'))
-    elif request.method == 'GET':
-        form.title.data = bug.title
-        form.description.data = bug.description
-        form.status.data = bug.status
     return render_template('edit_bug.html', form=form)
 
 
@@ -169,10 +160,9 @@ def leaderboard():
 def view_attachments(bug_id):
     """View attachments for a specific bug report."""
     bug = BugReport.query.get_or_404(bug_id)
-    if bug.user_id != current_user.id:
-        flash('You do not have permission to view these attachments.', 'danger')
-        return redirect(url_for('dashboard'))
+    # Remove the check for whether the bug belongs to the current user
     return render_template('view_attachments.html', bug=bug)
+
 
 
 @app.route('/logout')
